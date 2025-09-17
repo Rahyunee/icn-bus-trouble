@@ -230,6 +230,8 @@
     </div>
 
     <script>
+        // 배포된 Google Apps Script 웹앱 URL (끝이 /exec)
+        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyZ1Cn54kLY6yyizwN1fEMG-pHosdyLrvEnZml7Ee2DjRgmOblijjDON4VJko3kA-vUfQ/exec';
         let autoRefreshInterval;
         
         function showStatus(message, type = 'success') {
@@ -242,13 +244,17 @@
             }, 3000);
         }
 
-        function refreshData() {
-            showStatus('데이터를 새로고침하는 중...', 'success');
-            // Google Apps Script 함수 호출
-            fetch('https://script.google.com/macros/s/AKfycbyZ1Cn54kLY6yyizwN1fEMG-pHosdyLrvEnZml7Ee2DjRgmOblijjDON4VJko3kA-vUfQ/exec')
-              .then(response => response.json())
-              .then(data => onDataReceived(data))
-              .catch(error => onError(error));
+        async function refreshData() {
+            try {
+                showStatus('데이터를 새로고침하는 중...', 'success');
+                const response = await fetch(WEBAPP_URL, { method: 'GET' });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                onDataReceived(data);
+                showStatus('데이터가 성공적으로 업데이트되었습니다!', 'success');
+            } catch (error) {
+                onError(error);
+            }
         }
 
         function onDataReceived(data) {
